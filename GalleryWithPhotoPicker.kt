@@ -12,6 +12,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import com.sarang.instagralleryModule.compose.GalleryListWithPreviewScreen
+import com.sarang.torang.ShortItem
+import com.sarang.torang.ShortVideo
+import com.sarang.torang.di.image.TorangAsyncImageData
+import com.sarang.torang.di.image.provideTorangAsyncImage
 
 @Composable
 fun GalleryWithPhotoPicker(onNext: (List<String>) -> Unit = {}, onClose: () -> Unit = {}){
@@ -25,9 +29,19 @@ fun GalleryWithPhotoPicker(onNext: (List<String>) -> Unit = {}, onClose: () -> U
             else { Log.d("__PhotoPicker", "No media selected") }
         }
     GalleryListWithPreviewScreen(
-        onNext = onNext,
-        onClose = onClose,
-        isPhotoPickerMode = true,
-        list = uris.map { it.toString() },
-        onPhotoPicker = { pickMultipleMedia.launch(PickVisualMediaRequest(PickVisualMedia.ImageOnly)) })
+        onNext              = onNext,
+        onClose             = onClose,
+        isPhotoPickerMode   = true,
+        list                = uris.map { it.toString() },
+        onPhotoPicker       = { pickMultipleMedia.launch(PickVisualMediaRequest(PickVisualMedia.ImageAndVideo)) },
+        imageLoader         = { provideTorangAsyncImage().invoke(
+            TorangAsyncImageData(modifier = it.modifier,
+                                      model = it.url,
+                                      contentScale = it.contentScale))
+        },
+        videoLoader = { ShortItem(short = ShortVideo(id       = "0",
+                                                     videoUrl = it.url),
+                                  isActive = it.isActive) }
+
+        )
 }
